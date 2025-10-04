@@ -5,12 +5,11 @@ import { motion } from "framer-motion";
 const NavBar = () => {
   const [Login, setLogin] = React.useState(true);
 
-
   const directLogin = async (e) => {
     e.preventDefault();
     console.log("login clicked");
     try {
-      window.location.href = "http://localhost:4000/login";
+      window.location.href = "http://localhost:3000/login";
     } catch (error) {
       console.log(error);
     }
@@ -19,25 +18,25 @@ const NavBar = () => {
     const fetchLoginStatus = async () => {
       console.log("fetching login status");
       const getLoginStatus = async () => {
-        const res = await fetch("http://localhost:4000/api/check-login", {
+        const res = await fetch("http://localhost:3000/api/check-login", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "include",
         });
+        console.log("Response:", res);
         console.log("Response status:", res.status);
         const data = await res.json();
         console.log("Fetched login status:", data);
         return data.loggedIn; // <- return the boolean
       };
-      
+
       const isLoggedIn = await getLoginStatus();
       setLogin(isLoggedIn);
     };
     fetchLoginStatus();
   }, []);
-  
 
   return (
     <div className="w-full fixed top-0 left-0 z-20">
@@ -49,9 +48,7 @@ const NavBar = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl font-extrabold tracking-wide"
           >
-            <a href="/">
-              Slanguage
-            </a>
+            <a href="/">Slanguage</a>
           </motion.div>
 
           {/* Login Button */}
