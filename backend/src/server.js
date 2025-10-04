@@ -30,6 +30,7 @@ app.use(
     clientSecret: process.env.CLIENT_SECRET,
     secret: process.env.SESSION_SECRET,
     authRequired: false,
+    auth0Logout: true,
     authorizationParams: { response_type: "code" },
   })
 );
