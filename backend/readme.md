@@ -1,5 +1,20 @@
 #Backend
 
+### Structure
+
+```
+frontend  ──HTTP──>  Express (/api/translate)
+                         │
+                    detect.js (dict hit)
+                         │
+           ┌────────> Gemini (guardrails, timeout)
+           │                 │
+           └── fallback compose (templates)
+                         │
+                     response JSON
+
+```
+
 ## Setup and test
 
 `npm i

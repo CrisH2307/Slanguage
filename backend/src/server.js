@@ -2,6 +2,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import translateRoute from "./routes/translate.js";
+import { connectDB } from "./db/connect.js";
+
+await connectDB();
 
 const app = express();
 app.use(express.json());

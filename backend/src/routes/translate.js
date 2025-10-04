@@ -1,15 +1,24 @@
-// Transactional routes for translation
 import express from "express";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { detectSlang, dict } from "../lib/detect.js";
-import { composeFallback } from "../lib/compose.js";
-import { scanSafety } from "../lib/safety.js";
+
+import { detectSlang } from "../lib/detect.js"; // your dictionary matcher
+import { composeFallback } from "../lib/compose.js"; // rule-based composer
+import { scanSafety } from "../lib/safety.js"; // simple content scan
+
+// ----- OPTIONAL: tiny in-memory cache (safe even without Mongo) -----
+const cache = new Map();
+const cacheKey = ({ text, audience, context, regionPref }) =>
+  JSON.stringify({
+    t: text.trim().toLowerCase().replace(/\s+/g, " "),
+    a: audience,
+    c: context,
+    r: regionPref || "global",
+  });
 
 const router = express.Router();
-const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 
-// Validate input
+// Validate request body
 const Body = z.object({
   text: z.string().min(1),
   audience: z.enum(["genz", "millennial"]).default("millennial"),
@@ -17,24 +26,39 @@ const Body = z.object({
   regionPref: z.enum(["toronto", "indian_eng", "chinese_eng", "global"]).optional(),
 });
 
+// Optional Gemini client (only created if KEY exists)
+const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
+
 router.post("/", async (req, res) => {
-  const parse = Body.safeParse(req.body);
-  if (!parse.success) return res.status(400).json({ error: "Bad request", issues: parse.error.issues });
+  // 1) validate
+  const parsed = Body.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: "Bad request", issues: parsed.error.issues });
+  }
+  const { text, audience, context, regionPref } = parsed.data;
 
-  const { text, audience, context, regionPref } = parse.data;
+  // 2) cache hit?
+  const key = cacheKey({ text, audience, context, regionPref });
+  if (cache.has(key)) {
+    return res.json(cache.get(key));
+  }
 
-  // Detect slang with dictionary (fast, offline)
-  const detected = detectSlang(text);
+  // 3) detect slang (fast, offline)
+  const detected = detectSlang(text, { regionPref });
 
-  // Try Gemini (within timeout), but ALWAYS have fallback
+  // 4) try LLM (guarded), else 5) fallback composer
+  let out;
   try {
-    const controller = new AbortController();
-    const t = setTimeout(() => controller.abort(), 1600);
-
     if (!genAI) throw new Error("No GEMINI_API_KEY");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+    // hard timeout so your API stays snappy
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 1600);
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = buildPrompt({ text, audience, context, regionPref, detected });
+
+    // Ask for JSON directly
     const result = await model.generateContent(
       {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -43,41 +67,53 @@ router.post("/", async (req, res) => {
       { signal: controller.signal }
     );
 
-    clearTimeout(t);
+    clearTimeout(timer);
 
-    const raw = result.response?.text();
-    const parsed = JSON.parse(raw);
+    const raw = result?.response?.text?.();
+    const parsedJSON = JSON.parse(raw || "{}");
 
-    // Minimal shape check
-    if (!parsed || !parsed.plain || !parsed.audienceRewrite) throw new Error("Invalid LLM JSON");
+    // minimal shape check—if bad, we fallback
+    if (!parsedJSON?.plain || !parsedJSON?.audienceRewrite) throw new Error("Invalid LLM JSON");
 
-    // Merge in safety
+    // add safety scan (local)
     const safety = scanSafety(text);
-    return res.json({ ...parsed, safety });
-  } catch (e) {
-    // Fallback compose
-    const fallback = composeFallback({ text, audience, context, detected });
-    // If nothing detected, still attach generic safety scan
+    out = { ...parsedJSON, safety };
+  } catch {
+    // 5) fallback compose (always works)
+    const fallback = composeFallback({ text, audience, context, detected, regionPref });
     const safety = scanSafety(text);
-    return res.json({ ...fallback, safety });
+    out = { ...fallback, safety };
   }
+
+  // 6) respond + 7) cache
+  cache.set(key, out);
+  return res.json(out);
 });
 
 function buildPrompt({ text, audience, context, regionPref, detected }) {
-  const dictPayload = detected.map((e) => ({
+  // pass hints from your dictionary to improve LLM reliability
+  const hints = detected.map((e) => ({
     phrase: e.phrase,
-    gloss: e.meanings?.[0] || "",
     region: e.regions?.[0] || "global",
+    gloss: e.meanings?.[0] || "",
   }));
 
-  return `You are a culturally sensitive slang translator. 
-          Return JSON with keys: detected[], plain, audienceRewrite, notes[], safety:{sensitive:boolean}.
-          - Keep "plain" <= 20 words.
-          - "audienceRewrite" should match audience=${audience}, context=${context}.
-          - If content is offensive, set safety.sensitive=true and avoid slurs in rewrites.
-          Input text: "${text}"
-          Region preference: ${regionPref || "global"}
-          Dictionary hints (optional): ${JSON.stringify(dictPayload)}`;
+  return `
+        You are a culturally sensitive slang translator. Output strict JSON with keys:
+        - detected: array of { "phrase": string, "region": string }
+        - plain: short meaning (<= 20 words)
+        - audienceRewrite: rewrite tuned to audience and context
+        - notes: array of short bullets (origin/nuance/safe use)
+        - safety: { "sensitive": boolean }
+
+        Rules:
+        - Do not include slurs in rewrites; if content is sensitive, set safety.sensitive=true.
+        - Keep "plain" one short sentence. Be neutral and non-judgmental.
+        - Audience: ${audience}; Context: ${context}; Region preference: ${regionPref || "global"}.
+
+        Input text: """${text}"""
+        Dictionary hints: ${JSON.stringify(hints)}
+        `;
 }
 
 export default router;
