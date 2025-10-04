@@ -5,6 +5,16 @@ import { Menu, X } from "lucide-react";
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const directLogin = async (e) => {
+    e.preventDefault();
+    console.log("login clicked")
+    try {
+      window.location.href = "http://localhost:4000/login";
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className="w-full fixed top-0 left-0 z-20">
       <div className="backdrop-blur-md bg-black/60 text-white p-4 shadow-lg">
@@ -34,7 +44,8 @@ const NavBar = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mt-3 space-y-2 px-6"
           >
-            <a href="#login" className="block hover:text-pink-400">
+            <a href="login" className="block hover:text-pink-400"
+            onClick={directLogin}>
               Login
             </a>
             <a href="#about" className="block hover:text-pink-400">
