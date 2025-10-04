@@ -5,6 +5,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "express-openid-connect": "^2.19.2",
     "nanoid": "^5.1.6",
     "zod": "^4.1.11"
   },
