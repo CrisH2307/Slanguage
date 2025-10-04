@@ -51,6 +51,27 @@ async function create(email, text) {
 
 }
 
+async function createComments(email, text, id) {
+  await connectDB();
+
+  console.log('Connected to database');
+
+  const post = await Post.findById(id);
+  post.comments.push({user: email, text: text})
+  await post.save()
+  console.log('Inserted comment:', post);
+
+}
+
+async function showComments( id) {
+  await connectDB();
+
+  console.log('Connected to database');
+
+  const post = await Post.findById(id);
+  return post.comments
+}
+
 app.get("/api/check-login", (req, res) => {
   res.json({ loggedIn: req.oidc?.isAuthenticated() === true });
 });
@@ -97,7 +118,7 @@ app.get('/api/me', requiresAuth(), (req, res) => {
 });
 
 // Threads/posts routes
-app.use("/api/createthreads", (req, res) => {
+app.use("/api/createthreads", requiresAuth(), (req, res) => {
   const user = req.oidc.user
   const email = user.email
   const text = req.body.text
@@ -105,6 +126,22 @@ app.use("/api/createthreads", (req, res) => {
   res.json({ message: "Thread created" })
 });
 app.use("/api/getthreads", getThreads);
+
+app.use("/api/createcomments", requiresAuth(), async (req, res) => {
+  const user = req.oidc.user
+  const email = user.email
+  const {text, id} = req.body
+  console.log("Creating a comment", text, email, id)
+  createComments(email, text, id)
+  return res.json({ message: "Comment created" })
+})
+
+app.use("/api/getcomments", requiresAuth(), async (req, res) => {
+  const {id} = req.body
+  const comments = await showComments(id)
+  console.log("COMMS",comments)
+  return res.json(comments)
+}); // just reuse the posts route
 
 
 const PORT = process.env.PORT || 3000;

@@ -1,8 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-//import { get } from 'http';
-//import { useEffect } from 'react';
 
 
 const Forems = () => {
@@ -48,8 +46,8 @@ const Forems = () => {
 
   return (
     <div className='mt-24'>
-      {data.map((item, index) => (
-        <div key={index} className='border-2 border-black m-4 p-4'>
+      {data.map((item) => (
+        <div key={item._id} className='border-2 border-black m-4 p-4'>
           <h2 className='font-bold text-lg'>{item.title}</h2>
           <p className='text-sm'>by {item.user}</p>
           <div className='mt-2'>
