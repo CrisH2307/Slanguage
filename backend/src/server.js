@@ -47,6 +47,7 @@ app.get("/", (req, res) => {
   }
   return res.redirect("http://localhost:5173/loggedout");
 });
+
 app.get("/profile", requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));
 });
