@@ -9,6 +9,7 @@ router.get("/", async (_req, res) => {
     .sort({ createdAt: -1 })        // newest first
     .lean();
   res.json(docs);
+  console.log("fetched posts:", docs);
 });
 
 export default router;

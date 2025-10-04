@@ -1,19 +1,20 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
-import { testThreads } from './data'
+import { useEffect } from 'react';
+//import { get } from 'http';
 //import { useEffect } from 'react';
 
 
 const Forems = () => {
 
-  const data = testThreads;
+  const [data, setData] = React.useState([]);
   const navigate = useNavigate();
   const navigateToThread = (threadId) =>  {navigate(`/thread/${threadId}`)};
   const [newthread, setNewThread] = React.useState("")
 
   const submitThreads = async () => {
     console.log(newthread)
-    const res = await fetch('http://localhost:3000/api/posts', {
+    const res = await fetch('http://localhost:3000/api/createthreads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +25,27 @@ const Forems = () => {
     const data = await res.json();
     const {message} = data; 
     console.log("postedx2", message);
+    window.location.reload(true);
   }
+
+
+  useEffect(() => {
+    const getThreads = async () => {
+      console.log(newthread)
+      const res = await fetch('http://localhost:3000/api/getthreads', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      console.log(data)
+      setData(data)
+    };
+    getThreads();
+    console.log("data", data)
+  }, []);
 
   return (
     <div className='mt-24'>
