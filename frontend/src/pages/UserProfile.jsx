@@ -1,25 +1,13 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { LogOut, MessageSquare, ChevronRight } from "lucide-react"; // <-- Added ChevronRight
 
 const UserProfile = ({ user = "User" }) => {
   const navigate = useNavigate();
   const [age, setAge] = useState("");
 
-  const MIN_AGE = 18; // 👈 change this if you want a different restriction
-
-  const toForums = () => {
-    navigate("/forums");
-  };
-
-  const logoutDirect = async (e) => {
-    e.preventDefault();
-    try {
-      window.location.href = "http://localhost:5173/logout";
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const MIN_AGE = 18;
 
   const handleSelect = (lang) => {
     const ageNum = parseInt(age, 10);
@@ -51,65 +39,66 @@ const UserProfile = ({ user = "User" }) => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        {/* Card */}
         <div className="rounded-2xl shadow-xl border border-[#2983CC]/30 bg-white p-8 text-center">
           {/* Welcome */}
           <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-3xl font-bold text-black mb-6"
+            className="text-3xl font-bold text-black mb-4"
           >
             Hey! {user}
           </motion.h1>
 
-          {/* Prompt */}
-          <p className="text-gray-600 mb-6">
-            Please enter your age and select your Slanguage:
-          </p>
-
-          {/* Age input */}
-          <input
-            type="number"
-            min="1"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            placeholder="Enter your age"
-            className="mb-6 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
-          />
-
-          {/* Language options */}
-          <div className="flex flex-col gap-4">
+          {/* Age input row */}
+          <div className="flex items-center gap-3 mb-6">
+            <p className="text-gray-600">Please enter your age:</p>
+            <input
+              type="number"
+              min="1"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+              placeholder="Age"
+              className="w-24 px-3 py-1 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
+            />
+          </div>
+          <p className="text-gray-600 mb-4">Select your Slanguage:</p>
+          {/* Forum Links (text + icon) */}
+          <div className="flex flex-col items-start gap-3 text-left mb-6">
             {langs.map((lang) => (
-              <motion.button
+              <motion.div
                 key={lang.value}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                whileHover={{ x: 5 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => handleSelect(lang.value)}
-                className="px-6 py-3 rounded-full bg-black text-white font-semibold hover:bg-[#2983CC] transition"
+                className="flex items-center gap-2 text-black cursor-pointer hover:text-[#2983CC] transition"
               >
-                {lang.label}
-              </motion.button>
+                <MessageSquare size={18} />
+                <span className="font-medium">{lang.label} Slang</span>
+              </motion.div>
             ))}
           </div>
-
-          {/* Extra actions */}
-          <div className="mt-6 flex flex-col gap-3">
-            <button
-              onClick={logoutDirect}
-              className="px-6 py-2 rounded-lg border border-gray-300 text-black hover:bg-gray-100 transition"
-            >
-              Logout
-            </button>
-            <button
-              onClick={toForums}
-              className="px-6 py-2 rounded-lg bg-[#2983CC] text-white hover:bg-black transition"
-            >
-              Go to Forums
-            </button>
-          </div>
+          {/* Next button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md font-semibold hover:bg-[#2983CC] transition"
+            onClick={() => navigate("/")}
+          >
+            <ChevronRight size={18} />
+            Next
+          </motion.button>
         </div>
+        {/* Logout button */}
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md font-semibold hover:bg-[#2983CC] transition mt-4"
+          onClick={() => navigate("/")}
+        >
+          <LogOut size={18} />
+          Logout
+        </motion.button>
       </motion.div>
     </div>
   );
