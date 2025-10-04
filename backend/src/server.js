@@ -16,9 +16,9 @@ const config = {
   authRequired: false,
   auth0Logout: true,
   secret: process.env.AUTH0_SECRET,
-  baseURL: "http://localhost:4000",
-  clientID: "cOdcDX4wUmAm2Rx22DyyxJJGFugkapQe",
-  issuerBaseURL: process.env.AUTH0_DOMAIN_KEY,
+  baseURL: 'http://localhost:4000',
+  clientID: 'cOdcDX4wUmAm2Rx22DyyxJJGFugkapQe',
+  issuerBaseURL: 'https://dev-w8zkm8zvg0r3lhgo.us.auth0.com'
 };
 
 app.use(auth(config));
@@ -30,6 +30,9 @@ app.use(
 );
 const __dirname = path.resolve();
 
+app.get('/', (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? res.redirect("http://localhost:5173/profile") : res.redirect("http://localhost:5173/loggedout"));
+});
 app.get("/profile", requiresAuth(), (req, res) => {
   res.send(JSON.stringify(req.oidc.user));
 });

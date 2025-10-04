@@ -23,7 +23,9 @@ const NavBar = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-2xl font-extrabold tracking-wide"
           >
-            Slanguage
+            <a href="/">
+              Slanguage
+            </a>
           </motion.div>
 
           {/* Login Button */}
