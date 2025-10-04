@@ -27,7 +27,12 @@ const Forems = () => {
           onClick={()=>navigateToThread(item.id)}> See Thread</button>
         </div>
       ))}
-      
+      <div className="p-4 m-4 border-2 border-black  w-max-screen">
+        <h2 className="text-2xl"> Create New Thread</h2>
+        <div className='mx-3 flex'>
+        <input className=" w-full border-1 m-2 p-2 "></input>
+        </div>
+      </div>
     </div>
   )
 }

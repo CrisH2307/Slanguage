@@ -13,10 +13,12 @@ const Thread = () => {
         <div className="mt-24 p-4">
         <button onClick={navigateBack}>Back</button>
         <h2 className="font-bold text-xl">{thread.title}</h2>
+        <p className="border-1 border-gray-400 p-3 mb-4 mt-2 text-slate-400"> translation </p>
         <p className="text-sm">by {thread.user}</p>
         {thread.comments.map((c, index) => (
             <div key={index} className="border-t border-gray-300 mt-2 pt-2">
             <p>{c.text}</p>
+            <p className="border-1 border-gray-400 p-3 mb-4 mt-2 text-slate-400"> translation </p>
             <p className="text-xs text-gray-500">by {c.user}</p>
             </div>
         ))}
