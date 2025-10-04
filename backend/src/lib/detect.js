@@ -38,9 +38,11 @@ export function detectSlang(text, opts = {}) {
       continue;
     }
     const prefers = (arr) => regionPref && Array.isArray(arr) && arr.includes(regionPref);
-    if (!prefers(prev.regions) && prefers(e.regions)) byPhrase.set(key, e);
+    if (!prefers(prev?.regions) && prefers(e?.regions)) byPhrase.set(key, e);
   }
-  return dropSubsumed(hits, lower);
+
+  const preferred = Array.from(byPhrase.values());
+  return dropSubsumed(preferred, lower);
 }
 function dropSubsumed(entries, lowerText) {
   const phrases = entries.map((e) => (e.phrase || "").toLowerCase());
