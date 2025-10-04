@@ -1,12 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const UserProfile = ({ user = "User" }) => {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
   const [age, setAge] = useState("");
 
-  const MIN_AGE = 18; // 👈 change this if you want a different restriction
+  const MIN_AGE = 18;
+
+  // Fetch authenticated user profile from backend (Auth0 via express-openid-connect)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/me", {
+          method: "GET",
+          credentials: "include", // send cookies
+          headers: { Accept: "application/json" },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        } else if (res.status === 401) {
+          setProfile(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const toForums = () => {
     navigate("/forums");
@@ -15,7 +39,7 @@ const UserProfile = ({ user = "User" }) => {
   const logoutDirect = async (e) => {
     e.preventDefault();
     try {
-      window.location.href = "http://localhost:5173/logout";
+      window.location.href = "http://localhost:3000/logout";
     } catch (error) {
       console.log(error);
     }
@@ -60,13 +84,11 @@ const UserProfile = ({ user = "User" }) => {
             transition={{ duration: 0.5 }}
             className="text-3xl font-bold text-black mb-6"
           >
-            Hey! {user}
+            Hey! {profile?.name || profile?.nickname || profile?.given_name || user}
           </motion.h1>
 
           {/* Prompt */}
-          <p className="text-gray-600 mb-6">
-            Please enter your age and select your Slanguage:
-          </p>
+          <p className="text-gray-600 mb-6">Please enter your age and select your Slanguage:</p>
 
           {/* Age input */}
           <input
