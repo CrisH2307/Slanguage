@@ -5,10 +5,11 @@ import Navbar from "../components/NavBar";
 export default function Hero() {
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
 
+  const handleMouseMove = (e) => {
+    setCursor({ x: e.clientX, y: e.clientY });
+  };
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCursor({ x: e.clientX, y: e.clientY });
-    };
+    
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
@@ -18,7 +19,7 @@ export default function Hero() {
       className="min-h-screen relative bg-white text-black overflow-hidden"
       onMouseMove={handleMouseMove}
     >
-      <NavBar />
+      <Navbar />
 
       {/* Hero Section */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-8 relative z-10">
@@ -57,6 +58,7 @@ export default function Hero() {
         >
           Get Started
         </motion.button>
+      </div>
       </div>
     </div>
   );

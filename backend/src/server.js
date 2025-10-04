@@ -25,7 +25,8 @@ app.use(auth(config));
 
 app.use(
   cors({
-    origin: process.env.ALLOW_ORIGIN?.split(",") || "*",
+    origin: process.env.ALLOW_ORIGIN || "*",
+    credentials: true,
   })
 );
 const __dirname = path.resolve();
@@ -34,8 +35,16 @@ app.get('/', (req, res) => {
   res.send(req.oidc.isAuthenticated() ? res.redirect("http://localhost:5173/profile") : res.redirect("http://localhost:5173/loggedout"));
 });
 app.get("/profile", requiresAuth(), (req, res) => {
-  res.send(JSON.stringify(req.oidc.user));
+  res.json(JSON.stringify(req.oidc.user));x
 });
+app.get("/api/check-login", (req, res) => {
+  if (req.oidc.isAuthenticated()) {
+    res.json({ loggedIn: true, user: req.oidc.user }); // user info from Auth0
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
+
 
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 app.use("/api/translate", translateRoute);
