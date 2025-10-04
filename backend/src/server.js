@@ -16,26 +16,39 @@ const config = {
   authRequired: false,
   auth0Logout: true,
   secret: process.env.AUTH0_SECRET,
-  baseURL: "http://localhost:4000",
-  clientID: "cOdcDX4wUmAm2Rx22DyyxJJGFugkapQe",
-  issuerBaseURL: process.env.AUTH0_DOMAIN_KEY,
+  baseURL: 'http://localhost:4000',
+  clientID: 'cOdcDX4wUmAm2Rx22DyyxJJGFugkapQe',
+  issuerBaseURL: 'https://dev-w8zkm8zvg0r3lhgo.us.auth0.com'
 };
 
 app.use(auth(config));
 
 app.use(
   cors({
-    origin: process.env.ALLOW_ORIGIN?.split(",") || "*",
+    origin: process.env.ALLOW_ORIGIN || "*",
+    credentials: true,
   })
 );
 const __dirname = path.resolve();
 
-app.get("/profile", requiresAuth(), (req, res) => {
-  res.send(JSON.stringify(req.oidc.user));
+app.get('/', (req, res) => {
+  res.send(req.oidc.isAuthenticated() ? res.redirect("http://localhost:5173/profile") : res.redirect("http://localhost:5173/loggedout"));
 });
+app.get("/profile", requiresAuth(), (req, res) => {
+  res.json(JSON.stringify(req.oidc.user));x
+});
+app.get("/api/check-login", (req, res) => {
+  if (req.oidc.isAuthenticated()) {
+    res.json({ loggedIn: true, user: req.oidc.user }); // user info from Auth0
+  } else {
+    res.json({ loggedIn: false });
+  }
+});
+
 
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 app.use("/api/translate", translateRoute);
+app.use("/api/posts", requiresAuth(), (await import("./routes/posts.js")).default);
 
 if(process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")))
