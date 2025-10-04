@@ -88,8 +88,7 @@ const UserProfile = ({ user = "User" }) => {
           </motion.h1>
 
           {/* Prompt */}
-          <p className="text-gray-600 mb-6">Please enter your age and select your Slanguage:</p>
-
+          <p className="text-gray-600 mb-6">{profile ? "Please enter your age and select your Slanguage:" : "You are not logged in. Log in to personalize your Slanguage experience, then enter your age and pick a Slanguage:"}</p>
           {/* Age input */}
           <input
             type="number"
@@ -97,7 +96,7 @@ const UserProfile = ({ user = "User" }) => {
             value={age}
             onChange={(e) => setAge(e.target.value)}
             placeholder="Enter your age"
-            className="mb-6 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
+            className="mb-6 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2983CC] text-black"
           />
 
           {/* Language options */}

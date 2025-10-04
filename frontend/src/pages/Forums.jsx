@@ -6,10 +6,9 @@ import { useEffect } from 'react';
 
 
 const Forems = () => {
-
   const [data, setData] = React.useState([]);
   const navigate = useNavigate();
-  const navigateToThread = (threadId) =>  {navigate(`/thread/${threadId}`)};
+  const navigateToThread = (threadId) =>  {navigate(`/forums/${threadId}`)};
   const [newthread, setNewThread] = React.useState("")
 
   const submitThreads = async () => {
@@ -61,9 +60,9 @@ const Forems = () => {
               </div>
             ))}
           </div>
-
+          
           <button className='mt-5 text-blue-500 underline hover:font-blue-200' 
-          onClick={()=>navigateToThread(item.id)}> See Thread</button>
+          onClick={()=>navigateToThread(item._id)}> See Thread</button>
         </div>
       ))}
       <div className="p-4 m-4 border-2 border-black  w-max-screen">
