@@ -1,0 +1,80 @@
+[
+  {
+    "id": "mans",
+    "phrase": "mans",
+    "variants": ["mans"],
+    "regions": ["toronto"],
+    "register": "casual",
+    "meanings": ["I/he/they (colloquial subject)"],
+    "rewriteTemplates": {
+      "genz": "I/he/they",
+      "millennial": "I/he/they",
+      "chat": "I/he/they",
+      "professional": "I/he/they"
+    },
+    "notes": ["Toronto youth slang; informal subject pronoun."],
+    "offensive": false
+  },
+  {
+    "id": "bare",
+    "phrase": "bare",
+    "variants": ["bare"],
+    "regions": ["toronto"],
+    "register": "casual",
+    "meanings": ["a lot; many"],
+    "rewriteTemplates": {
+      "genz": "a lot",
+      "millennial": "a lot",
+      "chat": "a lot",
+      "professional": "a lot"
+    },
+    "notes": ["Means 'a lot' (quantity)."],
+    "offensive": false
+  },
+  {
+    "id": "no-cap",
+    "phrase": "no cap",
+    "variants": ["no cap", "nocap"],
+    "regions": ["global"],
+    "register": "casual",
+    "meanings": ["not lying; seriously"],
+    "rewriteTemplates": {
+      "genz": "fr",
+      "millennial": "seriously",
+      "chat": "for real",
+      "professional": "I’m not exaggerating"
+    },
+    "notes": ["'No cap' = 'for real'."],
+    "offensive": false
+  },
+  {
+    "id": "jugaad",
+    "phrase": "jugaad",
+    "variants": ["jugaad"],
+    "regions": ["indian_eng"],
+    "register": "neutral",
+    "meanings": ["resourceful workaround; hacky solution"],
+    "rewriteTemplates": {
+      "genz": "scrappy workaround",
+      "millennial": "resourceful workaround",
+      "professional": "pragmatic workaround"
+    },
+    "notes": ["Indian English; context-positive but can imply 'hacky'."],
+    "offensive": false
+  },
+  {
+    "id": "add-oil",
+    "phrase": "add oil",
+    "variants": ["add oil"],
+    "regions": ["chinese_eng"],
+    "register": "neutral",
+    "meanings": ["keep it up; you can do it"],
+    "rewriteTemplates": {
+      "genz": "you got this!",
+      "millennial": "keep it up!",
+      "professional": "keep going—you can do it"
+    },
+    "notes": ["Calque from Cantonese 加油; encouragement."],
+    "offensive": false
+  }
+]

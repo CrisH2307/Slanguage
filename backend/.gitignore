@@ -1,6 +1,8 @@
 /node_modules
 /src/data
 /yarn.lock
+/data
+.env
 .pnp
 .pnp.js
 /coverage
