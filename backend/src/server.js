@@ -6,6 +6,7 @@ import { connectDB } from "./db/connect.js";
 import pkg from "express-openid-connect";
 import path from "path";
 import Post from "./models/Post.js";
+import threadsRouter from "./routes/posts.js";
 
 const { auth, requiresAuth } = pkg;
 await connectDB();
@@ -94,6 +95,9 @@ if (process.env.NODE_ENV === "production") {
 app.get('/api/me', requiresAuth(), (req, res) => {
   res.json(req.oidc.user); // { name, email, sub, picture, ... }
 });
+
+// Threads/posts routes
+app.use("/api/threads", threadsRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`API on http://localhost:${PORT}`))

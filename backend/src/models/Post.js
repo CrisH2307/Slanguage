@@ -1,16 +1,17 @@
-import { Schema, model, Types } from "mongoose";
-const PostSchema = new Schema(
-  {
-    user: { type: String, required: true },
-    title: { type: String, required: true },
-    comments: [
-        {
-            user: { type: String, required: true },
-            text: { type: String, required: true },
-            default: []
-        }, 
-    ]
-  },
-  { timestamps: true }
+import mongoose from "mongoose";
+
+const CommentSchema = new mongoose.Schema(
+  { user: String, text: String },
+  { _id: false, timestamps: true }
 );
-export default model("Post", PostSchema);
+
+const PostSchema = new mongoose.Schema(
+  {
+    user: String,          // e.g. "khangpicasso@gmail.com"
+    title: { type: String, required: true },
+    comments: { type: [CommentSchema], default: [] },
+  },
+  { timestamps: true }     // gives you createdAt / updatedAt like in your screenshot
+);
+
+export default mongoose.model("Post", PostSchema, "posts"); // <-- collection: posts
