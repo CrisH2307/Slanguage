@@ -52,6 +52,7 @@ app.get("/profile", requiresAuth(), (req, res) => {
 
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 app.use("/api/translate", translateRoute);
+app.use("/api/posts", requiresAuth(), (await import("./routes/posts.js")).default);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));
