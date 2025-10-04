@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,19 @@ const UserProfile = ({ user = "User" }) => {
   const [age, setAge] = useState("");
 
   const MIN_AGE = 18; // 👈 change this if you want a different restriction
+
+  const toForums = () => {
+    navigate("/forums");
+  };
+
+  const logoutDirect = async (e) => {
+    e.preventDefault();
+    try {
+      window.location.href = "http://localhost:5173/logout";
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleSelect = (lang) => {
     const ageNum = parseInt(age, 10);
@@ -81,34 +93,24 @@ const UserProfile = ({ user = "User" }) => {
               </motion.button>
             ))}
           </div>
+
+          {/* Extra actions */}
+          <div className="mt-6 flex flex-col gap-3">
+            <button
+              onClick={logoutDirect}
+              className="px-6 py-2 rounded-lg border border-gray-300 text-black hover:bg-gray-100 transition"
+            >
+              Logout
+            </button>
+            <button
+              onClick={toForums}
+              className="px-6 py-2 rounded-lg bg-[#2983CC] text-white hover:bg-black transition"
+            >
+              Go to Forums
+            </button>
+          </div>
         </div>
       </motion.div>
-=======
-import React from "react";
-import { useNavigate } from "react-router-dom";
-
-const UserProfile = () => {
-  const navigate = useNavigate();
-
-  const toForums = () => {
-    navigate("/forums");
-  };
-
-  const logoutDirect = async (e) => {
-    e.preventDefault();
-    try {
-      window.location.href = "http://localhost:4000/logout";
-    } catch (error) {
-      console.log(error)
-    }
-  }
-  return (
-    <div className="text-black mt-24">
-      <h1>User Profile Page</h1>
-      <button onClick={logoutDirect}>Logout</button>
-      <p>USER: {}</p>
-      <button onClick={toForums}>Next</button>
->>>>>>> 80079206f71c8a1fadf0772d6a068c263c832b69
     </div>
   );
 };
