@@ -5,6 +5,7 @@ import translateRoute from "./routes/translate.js";
 import { connectDB } from "./db/connect.js";
 import pkg from "express-openid-connect";
 import path from "path";
+import Post from "./models/Post.js";
 
 const { auth, requiresAuth } = pkg;
 await connectDB();
@@ -35,6 +36,20 @@ app.use(
   })
 );
 
+async function create(email, text) {
+    await connectDB();
+
+    console.log('Connected to database');
+
+    const newPost = new Post ({
+      user: email,
+      title: text
+    })
+    await newPost.save()
+    console.log('Inserted post:', newPost);
+
+}
+
 app.get("/api/check-login", (req, res) => {
   res.json({ loggedIn: req.oidc?.isAuthenticated() === true });
 });
@@ -43,17 +58,29 @@ const __dirname = path.resolve();
 
 app.get("/", (req, res) => {
   if (req.oidc.isAuthenticated()) {
+    console.log("user is authenticated");
     return res.redirect("http://localhost:5173/profile");
   }
   return res.redirect("http://localhost:5173/loggedout");
 });
 
 app.get("/profile", requiresAuth(), (req, res) => {
+  console.log("Profile page");
   res.send(JSON.stringify(req.oidc.user));
 });
 
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 app.use("/api/translate", translateRoute);
+
+app.post("/api/posts", requiresAuth(), (req, res) => {
+  console.log("Creating a post");
+  const user = req.oidc.user;
+  const { text } = req.body;
+  console.log("Authenticated user:", text, user);
+  
+  create(user.email, text);
+  res.json({ message: "Post created" });
+})
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));
@@ -69,4 +96,4 @@ app.get('/api/me', requiresAuth(), (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`API on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`API on http://localhost:${PORT}`))

@@ -1,12 +1,30 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom';
 import { testThreads } from './data'
+//import { useEffect } from 'react';
+
 
 const Forems = () => {
 
   const data = testThreads;
   const navigate = useNavigate();
   const navigateToThread = (threadId) =>  {navigate(`/thread/${threadId}`)};
+  const [newthread, setNewThread] = React.useState("")
+
+  const submitThreads = async () => {
+    console.log(newthread)
+    const res = await fetch('http://localhost:3000/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for authentication
+      body: JSON.stringify({ text: newthread }),
+    });
+    const data = await res.json();
+    const {message} = data; 
+    console.log("postedx2", message);
+  }
 
   return (
     <div className='mt-24'>
@@ -30,7 +48,9 @@ const Forems = () => {
       <div className="p-4 m-4 border-2 border-black  w-max-screen">
         <h2 className="text-2xl"> Create New Thread</h2>
         <div className='mx-3 flex'>
-        <input className=" w-full border-1 m-2 p-2 "></input>
+        <input value={newthread} onChange={(e) => {setNewThread(e.target.value)}} className=" w-full border-1 m-2 p-2 "></input>
+        <button className='m-2 p-2 border-2 border-black hover:bg-black hover:text-white'
+        onClick={submitThreads}>Submit</button>
         </div>
       </div>
     </div>
