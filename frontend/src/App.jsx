@@ -5,6 +5,7 @@ import UserProfile from "./pages/UserProfile";
 import LoggedOut from "./pages/LoggedOut";
 import NavBar from "./components/NavBar";
 import Forums from "./pages/Forums";
+import Threads from "./pages/Thread";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/loggedout" element={<LoggedOut />} />
         <Route path="/forums" element={<Forums/>} />
+        <Route path="/thread/:id" element={<Threads/>} />
       </Routes>
     </div>
   );
