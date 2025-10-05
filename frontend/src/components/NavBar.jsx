@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
+
 const NavBar = () => {
   const [Login, setLogin] = React.useState(true);
 
@@ -58,7 +59,7 @@ const NavBar = () => {
             onClick={directLogin}
             className="px-6 py-2 rounded-full font-semibold text-white bg-[#2983CC] hover:bg-black transition"
           >
-            Login
+            {Login? "Profile" : "Login"}
           </motion.button>
         </div>
       </div>
