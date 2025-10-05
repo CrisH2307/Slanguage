@@ -14,6 +14,7 @@ const Forums = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("forums");
   const [threads, setThreads] = useState([]);
   const [newThread, setNewThread] = useState("");
+  const [user, setUser] = useState("");
 
   // 🔹 Get user's selected forum/language
   useEffect(() => {
@@ -36,7 +37,25 @@ const Forums = () => {
         console.error("Error fetching threads:", error);
       }
     };
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/me", {
+          method: "GET",
+          credentials: "include"
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.name);
+        } else if (res.status === 401) {
+          setUser(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+
     getThreads();
+    fetchProfile();
   }, []);
 
   const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -81,7 +100,7 @@ const Forums = () => {
         {/* User Info Card */}
         <div className="bg-white rounded-2xl shadow-md border border-[#2983CC]/30 p-6 flex flex-col items-center text-center">
           <UserCircle size={64} className="text-[#2983CC] mb-3" />
-          <h2 className="text-lg font-semibold">Hey, User!</h2>
+          <h2 className="text-lg font-semibold">Hey, {user}!</h2>
           <p className="text-sm text-gray-500">Welcome to Slanguage Forums</p>
         </div>
 

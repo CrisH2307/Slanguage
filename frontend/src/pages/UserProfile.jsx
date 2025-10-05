@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, LogOut, ChevronRight, ChevronLeft } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
@@ -105,7 +104,7 @@ const UserProfile = ({ user = "User" }) => {
               value={age}
               onChange={(e) => setAge(e.target.value)}
               placeholder="Age"
-              className="w-24 px-3 py-1 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
+              className="w-24 px-3 py-1 border border-gray-300 rounded-lg text-center text-black focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
             />
           </div>
 

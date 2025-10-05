@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
-
 
 const NavBar = () => {
   const [Login, setLogin] = React.useState(true);
