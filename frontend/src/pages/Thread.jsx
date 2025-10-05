@@ -72,6 +72,10 @@ const Thread = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [text, setText] = React.useState("")
+  const [comments, setComments] = React.useState([])
+
+
   useEffect(() => {
     let abort = false;
     async function fetchThread() {
@@ -94,6 +98,41 @@ const Thread = () => {
     if (id) fetchThread();
     return () => { abort = true; };
   }, [id]);
+
+  const submitComments = async () => {
+    console.log(id)
+    const res = await fetch('http://localhost:3000/api/createcomments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Include cookies for authentication
+      body: JSON.stringify({ id: id, text: text }),
+    });
+    const data = await res.json();
+    const {message} = data; 
+    console.log("postedx2", message);
+    window.location.reload(true);
+  }
+  
+  useEffect(() => {
+    const getComments = async () => {
+      const res = await fetch('http://localhost:3000/api/getcomments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ id: id }),
+      });
+      const data = await res.json();
+      console.log("COMMENTS",data)
+      setComments(data)
+      console.log("data", comments)
+    };
+    getComments();
+    
+  }, []);
 
 
   const [viewer] = useState(getViewer());
@@ -154,8 +193,11 @@ const Thread = () => {
         </div>
       ))}
 
-      <h2 className="mt-5">Comment</h2>
-      <input className="border-1 rounded-2xl p-2 border-black" placeholder="write a reply..." />
+
+        <h2 className="mt-5"> Comment</h2>
+        <input value={text} onChange={(e) => {setText(e.target.value)}} className="border-1 rounded-2xl p-2 border-black"></input>
+        <button className='m-2 p-2 border-2 border-black hover:bg-black hover:text-white'
+        onClick={submitComments}>Submit</button>
     </div>
   );
 };
