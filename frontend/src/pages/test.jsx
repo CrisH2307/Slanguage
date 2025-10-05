@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-//import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, LogOut, ChevronRight, ChevronLeft } from "lucide-react";
 
@@ -49,13 +49,13 @@ const UserProfile = ({ user = "User" }) => {
     setSelectedLang(lang);
   };
 
-  // const toForums = () => {
-  //   if (!selectedLang) {
-  //     alert("Please select a Slanguage first!");
-  //     return;
-  //   }
-  //   navigate(`/forum?lang=${selectedLang}&age=${age}`);
-  // };
+  const toForums = () => {
+    if (!selectedLang) {
+      alert("Please select a Slanguage first!");
+      return;
+    }
+    navigate(`/forum?lang=${selectedLang}&age=${age}`);
+  };
 
   // const logoutDirect = async (e) => {
   //   e.preventDefault();
@@ -93,12 +93,6 @@ const UserProfile = ({ user = "User" }) => {
             {profile?.name || profile?.nickname || profile?.given_name || user}
           </motion.h1>
 
-          {/* Prompt */}
-          <p className="text-gray-600 mb-6">
-            {profile
-              ? "Please enter your age and select your Slanguage:"
-              : "You are not logged in. Log in to personalize your Slanguage experience, then enter your age and pick a Slanguage:"}
-          </p>
           {/* Age input row */}
           <div className="flex justify-center items-center gap-3 mb-6">
             <p className="text-gray-600">Please enter your age:</p>

@@ -18,7 +18,7 @@ function App() {
         <Route path="/forum" element={<ForumPage />} />
         <Route path="/loggedout" element={<LoggedOut />} />
         <Route path="/forums" element={<Forums />} />
-        <Route path="/thread/:id" element={<Threads />} />
+        <Route path="/forums/:id" element={<Threads />} />
       </Routes>
     </div>
   );
