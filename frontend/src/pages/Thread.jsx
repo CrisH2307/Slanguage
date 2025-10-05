@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import {
+  User,
+  MessageSquare,
+  LogOut,
+  ArrowLeftCircle,
+  UserCircle,
+} from "lucide-react";
 
-// Point to your backend
-const API = (import.meta?.env?.VITE_API) || "http://localhost:3000";
+const API = import.meta?.env?.VITE_API || "http://localhost:3000";
 
-// Read viewer prefs from localStorage (set these on your profile page)
+// ---- Viewer Info ----
 function getViewer() {
   return {
     displayName: localStorage.getItem("displayName") || "Anon",
     generation: localStorage.getItem("generation") || "millennial",
-    regionPref: localStorage.getItem("regionPref") || "global",     
-  }
+    regionPref: localStorage.getItem("regionPref") || "global",
+  };
 }
 
+// ---- Translation Helper ----
 async function translateText(text, { generation, regionPref }) {
   const res = await fetch(`${API}/api/translate`, {
     method: "POST",
@@ -28,54 +35,53 @@ async function translateText(text, { generation, regionPref }) {
   return res.json();
 }
 
+// ---- Translation Display ----
 function TranslationBox({ tr }) {
   if (!tr) {
     return (
-      <p className="border-1 border-gray-400 p-3 mb-4 mt-2 text-slate-400">
-        translating…
+      <p className="border border-gray-300 p-3 mb-4 mt-2 text-gray-400 italic rounded-lg">
+        Translating…
       </p>
     );
   }
   return (
-    <div className="border-1 border-gray-400 p-3 mb-4 mt-2 rounded">
-      <div><strong>{tr.plain}</strong></div>
-      <div style={{ marginTop: 6 }}>{tr.audienceRewrite}</div>
-      <div style={{ marginTop: 8 }}>
-        {(tr.detected || []).map((d, i) => (
-          <span
-            key={i}
-            style={{
-              fontSize: 12,
-              marginRight: 6,
-              padding: "2px 8px",
-              border: "1px solid #ddd",
-              borderRadius: 999,
-            }}
-          >
-            {d.phrase}
-          </span>
-        ))}
-      </div>
-      {tr.safety?.sensitive && (
-        <div style={{ marginTop: 8, fontSize: 12, color: "#b33" }}>
-          <strong>Sensitive</strong>
+    <div className="border border-gray-200 p-4 mb-4 mt-2 rounded-xl bg-white shadow-sm">
+      <div className="font-semibold text-[#2983CC]">{tr.plain}</div>
+      <div className="mt-2 text-gray-700">{tr.audienceRewrite}</div>
+      {tr.detected?.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-2">
+          {tr.detected.map((d, i) => (
+            <span
+              key={i}
+              className="text-xs border border-gray-300 px-2 py-1 rounded-full text-gray-600"
+            >
+              {d.phrase}
+            </span>
+          ))}
         </div>
+      )}
+      {tr.safety?.sensitive && (
+        <p className="mt-2 text-xs text-red-500 font-medium">⚠ Sensitive</p>
       )}
     </div>
   );
 }
 
+// ---- Main Thread Component ----
 const Thread = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [thread, setThread] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewer] = useState(getViewer());
+  const [titleTr, setTitleTr] = useState(null);
+  const [commentTr, setCommentTr] = useState([]);
 
-  const [text, setText] = React.useState("")
-  const [comments, setComments] = React.useState([])
-
-
+  // ---- Fetch Thread ----
   useEffect(() => {
     let abort = false;
     async function fetchThread() {
@@ -83,8 +89,8 @@ const Thread = () => {
       setError(null);
       try {
         const res = await fetch(`${API}/api/getthreads/${id}`, {
-          credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+          credentials: "include",
+          headers: { Accept: "application/json" },
         });
         if (!res.ok) throw new Error(`Failed to load thread: ${res.status}`);
         const data = await res.json();
@@ -96,60 +102,50 @@ const Thread = () => {
       }
     }
     if (id) fetchThread();
-    return () => { abort = true; };
+    return () => {
+      abort = true;
+    };
   }, [id]);
 
-  const submitComments = async () => {
-    console.log(id)
-    const res = await fetch('http://localhost:3000/api/createcomments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include', // Include cookies for authentication
-      body: JSON.stringify({ id: id, text: text }),
-    });
-    const data = await res.json();
-    const {message} = data; 
-    console.log("postedx2", message);
-    window.location.reload(true);
-  }
-  
+  // ---- Fetch Comments ----
   useEffect(() => {
     const getComments = async () => {
-      const res = await fetch('http://localhost:3000/api/getcomments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ id: id }),
+      const res = await fetch(`${API}/api/getcomments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id }),
       });
       const data = await res.json();
-      console.log("COMMENTS",data)
-      setComments(data)
-      console.log("data", comments)
+      setComments(data);
     };
     getComments();
-    
-  }, []);
+  }, [id]);
 
+  // ---- Submit Comment ----
+  const submitComments = async () => {
+    if (!text.trim()) return;
+    const res = await fetch(`${API}/api/createcomments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ id, text }),
+    });
+    await res.json();
+    setText("");
+    window.location.reload();
+  };
 
-  const [viewer] = useState(getViewer());
-  const [titleTr, setTitleTr] = useState(null);
-  const [commentTr, setCommentTr] = useState([]);
-
+  // ---- Translate Thread + Comments ----
   useEffect(() => {
     let cancel = false;
     async function run() {
       if (!thread) return;
       try {
-        // Choose what you want to translate for the main post:
-        // - thread.title (headline) or thread.text (body) — keep whichever you use
         const mainText = thread.title || thread.text || "";
         const t0 = translateText(mainText, viewer);
         const tCs = Promise.all(
-          (thread.comments || []).map((c) => translateText(c.text, viewer))
+          comments.map((c) => translateText(c.text, viewer))
         );
         const [trTitle, trComments] = await Promise.all([t0, tCs]);
         if (!cancel) {
@@ -164,40 +160,86 @@ const Thread = () => {
     return () => {
       cancel = true;
     };
-  }, [thread, viewer.generation, viewer.regionPref]);
+  }, [thread, comments, viewer.generation, viewer.regionPref]);
 
-  console.log("thread", thread);
-
-  if (loading) return <p className="mt-24 p-4">Loading…</p>;
-  if (error) return <p className="mt-24 p-4 text-red-400">Error: {error}</p>;
+  if (loading)
+    return (
+      <p className="mt-24 p-4 text-center text-[#2983CC] font-semibold">
+        Loading…
+      </p>
+    );
+  if (error)
+    return (
+      <p className="mt-24 p-4 text-center text-red-500 font-semibold">
+        Error: {error}
+      </p>
+    );
 
   return (
-    <div className="mt-24 p-4">
-      <button onClick={() => navigate("/forums")}>Back</button>
-
-      <h2 className="font-bold text-xl">{thread.title}</h2>
-      <p className="text-sm">by {thread.user}</p>
-
-      {/* Original post text (if you have a body field) */}
-      {thread.text && <p className="mt-2 text-slate-200 italic">{thread.text}</p>}
-
-      {/* Translation for the main post */}
-      <TranslationBox tr={titleTr} />
-
-      {/* Comments: original + translation under each */}
-      {(thread.comments || []).map((c, index) => (
-        <div key={index} className="border-t border-gray-300 mt-2 pt-2">
-          <p>{c.text}</p>
-          <TranslationBox tr={commentTr[index]} />
-          <p className="text-xs text-gray-500">by {c.user}</p>
+    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-black">
+      {/* ===== Sidebar ===== */}
+      <aside className="md:w-1/4 w-full bg-gray-50 p-6 flex flex-col gap-6">
+        <div className="bg-white rounded-2xl shadow-md border border-[#2983CC]/30 p-6 flex flex-col gap-4">
+          <button
+            onClick={() => navigate("/forums")}
+            className="flex items-center gap-2 hover:text-[#2983CC] transition"
+          >
+            <ArrowLeftCircle size={18} /> Back to Forums
+          </button>
         </div>
-      ))}
+      </aside>
 
+      {/* ===== Main Thread Content ===== */}
+      <main className="md:w-3/4 w-full p-8 overflow-y-auto">
+        <h1 className="text-3xl font-bold mb-4 text-[#2983CC]">
+          {thread.title}
+        </h1>
+        <p className="text-sm text-gray-500 mb-6">by {thread.user}</p>
 
-        <h2 className="mt-5"> Comment</h2>
-        <input value={text} onChange={(e) => {setText(e.target.value)}} className="border-1 rounded-2xl p-2 border-black"></input>
-        <button className='m-2 p-2 border-2 border-black hover:bg-black hover:text-white'
-        onClick={submitComments}>Submit</button>
+        {thread.text && (
+          <p className="text-gray-700 italic mb-4">{thread.text}</p>
+        )}
+        <TranslationBox tr={titleTr} />
+
+        {/* Comments Section */}
+        <h2 className="text-xl font-semibold mt-8 mb-4 text-[#2983CC]">
+          Comments
+        </h2>
+
+        {comments.length > 0 ? (
+          comments.map((c, i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4"
+            >
+              <p className="text-gray-800">{c.text}</p>
+              <TranslationBox tr={commentTr[i]} />
+              <p className="text-xs text-gray-500 mt-1">by {c.user}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">No comments yet. Be the first!</p>
+        )}
+
+        {/* Comment Form */}
+        <div className="mt-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold mb-3 text-[#2983CC]">
+            Add a Comment
+          </h3>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Write your comment..."
+            className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
+          />
+          <button
+            onClick={submitComments}
+            className="bg-[#2983CC] text-white px-4 py-2 rounded-lg font-semibold hover:bg-black transition"
+          >
+            Submit
+          </button>
+        </div>
+      </main>
     </div>
   );
 };

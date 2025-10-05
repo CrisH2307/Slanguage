@@ -98,7 +98,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-8xl font-extrabold mb-6"
+          className="text-4xl md:text-8xl text-black font-extrabold mb-6"
         >
           Welcome to <span className="text-[#2983CC]">Slanguage</span>
         </motion.h1>

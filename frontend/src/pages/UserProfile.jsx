@@ -73,7 +73,7 @@ const UserProfile = ({ user = "User" }) => {
   ];
 
   return (
-    <div className="flex items-start justify-center min-h-screen bg-white px-6 pt-25">
+    <div className="flex items-start justify-center min-h-screen bg-white px-6 pt-10">
       {/* Added pt-20 for top gap */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

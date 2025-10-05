@@ -11,7 +11,6 @@ import Threads from "./pages/Thread";
 function App() {
   return (
     <div>
-      <NavBar />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/profile" element={<UserProfile />} />
