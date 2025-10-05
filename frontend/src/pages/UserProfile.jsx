@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, LogOut, ChevronRight, ChevronLeft } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
 
 const UserProfile = ({ user = "User" }) => {
   const navigate = useNavigate();
@@ -49,22 +50,17 @@ const UserProfile = ({ user = "User" }) => {
     setSelectedLang(lang);
   };
 
-  // const toForums = () => {
-  //   if (!selectedLang) {
-  //     alert("Please select a Slanguage first!");
-  //     return;
-  //   }
-  //   navigate(`/forum?lang=${selectedLang}&age=${age}`);
-  // };
-
-  // const logoutDirect = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     window.location.href = "http://localhost:3000/logout";
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const logoutDirect = async (e) => {
+    e.preventDefault();
+    try {
+      toast.success('Logged out successfully!');
+      await wait(600);
+      window.location.href = "http://localhost:3000/logout";
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const langs = [
     { label: "Chinese", value: "chinese" },
@@ -75,6 +71,7 @@ const UserProfile = ({ user = "User" }) => {
   return (
     <div className="flex items-start justify-center min-h-screen bg-white px-6 pt-25">
       {/* Added pt-20 for top gap */}
+      <Toaster />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -139,7 +136,7 @@ const UserProfile = ({ user = "User" }) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/")}
+              onClick={logoutDirect}
               className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-md font-semibold hover:bg-[#2983CC] transition"
             >
               <ChevronLeft size={18} />
@@ -150,7 +147,7 @@ const UserProfile = ({ user = "User" }) => {
               whileHover={{ scale: selectedLang ? 1.05 : 1 }}
               whileTap={{ scale: selectedLang ? 0.95 : 1 }}
               disabled={!selectedLang}
-              onClick={() => navigate("/forums")}
+              onClick={logoutDirect}
               className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold transition 
                 ${
                   selectedLang

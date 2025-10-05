@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import NavBar from "../components/NavBar";
+import { Toaster } from 'react-hot-toast';
 
 export default function Hero() {
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
@@ -48,6 +49,7 @@ export default function Hero() {
   return (
     <div className="relative flex items-center justify-center h-screen px-6 md:px-8 overflow-hidden bg-white">
       <NavBar />
+      <Toaster />
 
       {/* Falling Letters Animation */}
       {letters.map((src, index) => (
@@ -55,7 +57,7 @@ export default function Hero() {
           key={index}
           src={src}
           alt={`letter-${index}`}
-          className="absolute w-12 md:w-20 top-[-150px] opacity-90"
+          className="absolute w-12 md:w-20 left-[-100px] top-[-150px] opacity-90"
           initial={{
             x: Math.random() * screenWidth, // random start position across screen
             y: -200,
@@ -98,7 +100,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-4xl md:text-8xl font-extrabold mb-6"
+          className="text-4xl md:text-8xl font-extrabold mb-6 text-black"
         >
           Welcome to <span className="text-[#2983CC]">Slanguage</span>
         </motion.h1>

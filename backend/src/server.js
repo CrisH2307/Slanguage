@@ -82,7 +82,7 @@ app.get("/", (req, res) => {
     console.log("user is authenticated");
     return res.redirect("http://localhost:5173/profile");
   }
-  return res.redirect("http://localhost:5173/loggedout");
+  return res.redirect("http://localhost:5173/");
 });
 
 app.get("/profile", requiresAuth(), (req, res) => {
