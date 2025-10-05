@@ -7,6 +7,7 @@ import {
   PlusCircle,
   UserCircle,
 } from "lucide-react";
+import toast, { Toaster } from 'react-hot-toast';
 
 const Forums = () => {
   const navigate = useNavigate();
@@ -38,6 +39,17 @@ const Forums = () => {
     getThreads();
   }, []);
 
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const logoutDirect = async (e) => {
+    e.preventDefault();
+    try {
+      toast.success('Logged out successfully!');
+      await wait(600);
+      window.location.href = "http://localhost:3000/logout";
+    } catch (error) {
+      console.log(error);
+    }
+  };
   // 🔹 Create new thread
   const submitThread = async () => {
     if (!newThread.trim()) return;
@@ -68,6 +80,7 @@ const Forums = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-black">
       {/* ===== Left Sidebar ===== */}
+      <Toaster />
       <aside className="md:w-1/4 w-full bg-gray-50 p-6 flex flex-col gap-6">
         {/* User Info Card */}
         <div className="bg-white rounded-2xl shadow-md border border-[#2983CC]/30 p-6 flex flex-col items-center text-center">
@@ -89,9 +102,7 @@ const Forums = () => {
           </button>
 
           <button
-            onClick={() => {
-              window.location.href = "http://localhost:3000/logout";
-            }}
+            onClick={logoutDirect}
             className="flex items-center gap-2 text-red-500 hover:text-red-600 transition"
           >
             <LogOut size={18} /> Logout
