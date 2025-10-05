@@ -147,7 +147,7 @@ const UserProfile = ({ user = "User" }) => {
               whileHover={{ scale: selectedLang ? 1.05 : 1 }}
               whileTap={{ scale: selectedLang ? 0.95 : 1 }}
               disabled={!selectedLang}
-              onClick={logoutDirect}
+              onClick={() => {navigate("/forums")}}
               className={`flex items-center justify-center gap-2 px-4 py-2 rounded-md font-semibold transition 
                 ${
                   selectedLang
