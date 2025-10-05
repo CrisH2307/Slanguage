@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import NavBar from "../components/NavBar";
+import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 
 export default function Hero() {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   User,
   MessageSquare,
@@ -7,6 +8,7 @@ import {
   PlusCircle,
   UserCircle,
 } from "lucide-react";
+import { MdDelete } from "react-icons/md";
 import toast, { Toaster } from 'react-hot-toast';
 
 const Forums = () => {
@@ -89,6 +91,29 @@ const Forums = () => {
     }
   };
 
+  const deletethread = async (id) => {
+    try {
+      const res = await fetch("http://localhost:3000/api/deletethreads", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id: id }),
+      });
+      const data = await res.json();
+      console.log(data);
+      const { message } = data
+      if(message=="no"){
+        toast.error("Can't delete thread: Not your post");
+      } else {
+        toast.success("Thread deleted");
+        await wait(600);
+        window.location.reload();
+      }
+       // refresh to show new thread
+    } catch (error) {
+      console.error("Error deleting thread:", error);
+    }
+  }
   // 🔹 Navigate helpers
   const navigateToThread = (threadId) => navigate(`/forums/${threadId}`);
 
@@ -158,13 +183,17 @@ const Forums = () => {
                   </div>
                 ))}
               </div>
-
-              <button
-                onClick={() => navigateToThread(item._id)}
-                className="mt-4 flex items-center gap-2 text-[#2983CC] hover:underline font-medium"
-              >
-                <MessageSquare size={16} /> See Thread
-              </button>
+              <div className="flex flex-row justify-between">
+                <button
+                  onClick={() => navigateToThread(item._id)}
+                  className="mt-4 flex items-center gap-2 text-[#2983CC] hover:underline font-medium"
+                >
+                  <MessageSquare size={16} /> See Thread
+                </button>
+                <button onClick={()=>deletethread(item._id)}>
+                  <MdDelete size={20} className="mt-4 ml-4 text-black hover:text-red-500 cursor-pointer" />
+                </button>
+              </div>
             </div>
           ))
         ) : (

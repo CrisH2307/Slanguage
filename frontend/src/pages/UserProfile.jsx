@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, LogOut, ChevronRight, ChevronLeft } from "lucide-react";
 import toast, { Toaster } from 'react-hot-toast';
+import { motion } from "framer-motion";
 
 const UserProfile = ({ user = "User" }) => {
   const navigate = useNavigate();
