@@ -72,10 +72,6 @@ const Forums = () => {
 
   // 🔹 Navigate helpers
   const navigateToThread = (threadId) => navigate(`/forums/${threadId}`);
-  const goToForums = () => {
-    if (selectedLanguage) navigate(`/forums/${selectedLanguage}`);
-    else navigate("/forums");
-  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-gray-50 text-black">
