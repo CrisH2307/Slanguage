@@ -1,5 +1,5 @@
 // src/lib/timeout.js
-export async function withTimeout(exec, ms = 1600) {
+export async function withTimeout(exec, ms = 50000) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
   try {

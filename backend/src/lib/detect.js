@@ -4,7 +4,6 @@ import fs from "node:fs";
 import path from "node:path";
 
 const DICT = JSON.parse(fs.readFileSync(path.join(process.cwd(), "src/data/slang.seed.json"), "utf8"));
-
 const abbrevMap = {
   fr: "for real",
   idc: "I don't care",
