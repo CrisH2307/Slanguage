@@ -39,36 +39,31 @@ app.use(
 );
 
 async function create(email, text) {
-  await connectDB();
-
-  console.log("Connected to database");
-
   const newPost = new Post({
     user: email,
     title: text,
   });
   await newPost.save();
-  console.log("Inserted post:", newPost);
+  return newPost;
 }
 
 async function createComments(email, text, id) {
-  await connectDB();
-
-  console.log("Connected to database");
-
   const post = await Post.findById(id);
-  post.comments.push({ user: email, text: text });
+  if (!post) {
+    throw new Error("Thread not found");
+  }
+  post.comments.push({ user: email, text });
   await post.save();
-  console.log("Inserted comment:", post);
+  const saved = post.comments[post.comments.length - 1];
+  return saved.toObject({ versionKey: false });
 }
 
 async function showComments(id) {
-  await connectDB();
-
-  console.log("Connected to database");
-
   const post = await Post.findById(id);
-  return post.comments;
+  if (!post) {
+    throw new Error("Thread not found");
+  }
+  return post.comments.map((comment) => comment.toObject({ versionKey: false }));
 }
 
 app.get("/api/check-login", (req, res) => {
@@ -93,14 +88,16 @@ app.get("/profile", requiresAuth(), (req, res) => {
 app.get("/api/health", (_, res) => res.json({ ok: true }));
 app.use("/api/translate", translateRoute);
 
-app.post("/api/posts", requiresAuth(), (req, res) => {
-  console.log("Creating a post");
+app.post("/api/posts", requiresAuth(), async (req, res) => {
   const user = req.oidc.user;
   const { text } = req.body;
-  console.log("Authenticated user:", text, user);
-
-  create(user.email, text);
-  res.json({ message: "Post created" });
+  try {
+    const post = await create(user.email, text);
+    res.status(201).json(post);
+  } catch (err) {
+    console.error("Failed to create post", err);
+    res.status(500).json({ error: "Failed to create post" });
+  }
 });
 
 if (process.env.NODE_ENV === "production") {
@@ -117,12 +114,17 @@ app.get("/api/me", requiresAuth(), (req, res) => {
 });
 
 // Threads/posts routes
-app.use("/api/createthreads", requiresAuth(), (req, res) => {
+app.use("/api/createthreads", requiresAuth(), async (req, res) => {
   const user = req.oidc.user;
   const email = user.email;
   const text = req.body.text;
-  create(email, text);
-  res.json({ message: "Thread created" });
+  try {
+    const post = await create(email, text);
+    res.status(201).json(post);
+  } catch (err) {
+    console.error("Failed to create thread", err);
+    res.status(500).json({ error: "Failed to create thread" });
+  }
 });
 app.use("/api/getthreads", getThreads);
 
@@ -130,17 +132,25 @@ app.use("/api/createcomments", requiresAuth(), async (req, res) => {
   const user = req.oidc.user;
   const email = user.email;
   const { text, id } = req.body;
-  console.log("Creating a comment", text, email, id);
-  createComments(email, text, id);
-  return res.json({ message: "Comment created" });
+  try {
+    const comment = await createComments(email, text, id);
+    return res.status(201).json(comment);
+  } catch (err) {
+    console.error("Failed to create comment", err);
+    return res.status(500).json({ error: "Failed to create comment" });
+  }
 });
 
 app.use("/api/getcomments", requiresAuth(), async (req, res) => {
   const { id } = req.body;
-  const comments = await showComments(id);
-  console.log("COMMS", comments);
-  return res.json(comments);
-}); // just reuse the posts route
+  try {
+    const comments = await showComments(id);
+    return res.json(comments);
+  } catch (err) {
+    console.error("Failed to fetch comments", err);
+    return res.status(500).json({ error: "Failed to fetch comments" });
+  }
+}); 
 
 app.delete("/api/deletethreads", requiresAuth(), async (req, res) => {
   const { id } = req.body;
