@@ -14,7 +14,7 @@ As Gen Z and Gen Alpha continue to shape their own digital dialects through tren
 | Category | Technologies |
 |-----------|---------------|
 | **Frontend** | React, Tailwind CSS, JavaScript |
-| **Backend** | Node.js, Express.js |
+| **Backend** | C++, Node.js, Express.js |
 | **Database** | MongoDB, Mongoose |
 | **AI Integration** | Gemini API (GenAI) |
 | **Authentication** | Auth0 |
