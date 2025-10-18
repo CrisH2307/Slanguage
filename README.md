@@ -53,4 +53,28 @@ As Gen Z and Gen Alpha continue to shape their own digital dialects through tren
 Open an issue or submit a pull request to help improve **Slanguage**.
 
 
+---
 
+## 🧠 Training Pipeline Cheatsheet
+
+1. **Collect multi-platform contexts**  
+   ```bash
+   cd backend
+   npm run collect:data -- --collectors reddit,youtube \
+     --reddit-subs slang,teenagers --reddit-limit 200 --reddit-comments true \
+     --youtube-query "slang explained" --youtube-comments true
+   ```
+   Configure `REDDIT_*`, `YOUTUBE_API_KEY`, and friends in `backend/.env` before running.
+
+2. **Run the C++ analyzer for insights**  
+   ```bash
+   cd backend/src/training/cpp
+   g++ -std=c++17 -O2 slang_trainer.cpp -o slang_trainer
+   ./slang_trainer --input ../../data/generated/slang.contexts.tsv \
+     --output ../../data/generated/slang_language_model.json \
+     --top-tokens 20 --related-limit 8 \
+     --graph-output ../../data/generated/slang_related.tsv \
+     --state-out ../../data/generated/slang_stats.dat \
+     --clusters 10 --embedding-features 48 --min-pmi 0.05
+   ```
+   Next reloads can resume from the saved state with `--state-in`. Output now includes PMI-weighted context tokens, per-phrase quality scores, k-means cluster assignments, and a TSV edge list for graph/cluster tooling.
