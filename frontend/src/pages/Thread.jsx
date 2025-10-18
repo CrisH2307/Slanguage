@@ -1,12 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  User,
-  MessageSquare,
-  LogOut,
-  ArrowLeftCircle,
-  UserCircle,
-} from "lucide-react";
+import { ArrowLeftCircle } from "lucide-react";
 
 const API = import.meta?.env?.VITE_API || "http://localhost:3000";
 
@@ -77,9 +71,14 @@ const Thread = () => {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [commentError, setCommentError] = useState(null);
   const [viewer] = useState(getViewer());
   const [titleTr, setTitleTr] = useState(null);
-  const [commentTr, setCommentTr] = useState([]);
+  const [commentTranslations, setCommentTranslations] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const translationsRef = useRef({});
+
+  const getCommentKey = (comment, index) => comment?._id || `idx-${index}`;
 
   // ---- Fetch Thread ----
   useEffect(() => {
@@ -109,58 +108,104 @@ const Thread = () => {
 
   // ---- Fetch Comments ----
   useEffect(() => {
+    let cancelled = false;
     const getComments = async () => {
-      const res = await fetch(`${API}/api/getcomments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ id }),
-      });
-      const data = await res.json();
-      setComments(data);
+      try {
+        const res = await fetch(`${API}/api/getcomments`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ id }),
+        });
+        if (!res.ok) throw new Error(`Failed to load comments: ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setComments(data);
+          translationsRef.current = {};
+          setCommentTranslations({});
+          setCommentError(null);
+        }
+      } catch (e) {
+        if (!cancelled) setCommentError("Failed to load comments.");
+      }
     };
-    getComments();
+    if (id) getComments();
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   // ---- Submit Comment ----
   const submitComments = async () => {
-    if (!text.trim()) return;
-    const res = await fetch(`${API}/api/createcomments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ id, text }),
-    });
-    await res.json();
-    setText("");
-    window.location.reload();
+    if (!text.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API}/api/createcomments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ id, text }),
+      });
+      if (!res.ok) throw new Error("Failed to create comment");
+      const created = await res.json();
+      setComments((prev) => [...prev, created]);
+      setText("");
+      setCommentError(null);
+    } catch (e) {
+      console.error(e);
+      setCommentError("Unable to post comment. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // ---- Translate Thread + Comments ----
+  // ---- Translate Thread ----
   useEffect(() => {
-    let cancel = false;
-    async function run() {
+    let cancelled = false;
+    const translateThread = async () => {
       if (!thread) return;
       try {
         const mainText = thread.title || thread.text || "";
-        const t0 = translateText(mainText, viewer);
-        const tCs = Promise.all(
-          comments.map((c) => translateText(c.text, viewer))
-        );
-        const [trTitle, trComments] = await Promise.all([t0, tCs]);
-        if (!cancel) {
-          setTitleTr(trTitle);
-          setCommentTr(trComments);
-        }
+        const result = await translateText(mainText, viewer);
+        if (!cancelled) setTitleTr(result);
       } catch (e) {
         console.error(e);
       }
-    }
-    run();
-    return () => {
-      cancel = true;
     };
-  }, [thread, comments, viewer.generation, viewer.regionPref]);
+    translateThread();
+    return () => {
+      cancelled = true;
+    };
+  }, [thread, viewer.generation, viewer.regionPref]);
+
+  // ---- Translate Comments (only new ones) ----
+  useEffect(() => {
+    let cancelled = false;
+    const translateMissing = async () => {
+      const pending = comments
+        .map((comment, index) => ({ comment, key: getCommentKey(comment, index) }))
+        .filter(({ key }) => !translationsRef.current[key]);
+      if (!pending.length) return;
+      try {
+        const translated = await Promise.all(pending.map(({ comment }) => translateText(comment.text, viewer)));
+        if (cancelled) return;
+        setCommentTranslations((prev) => {
+          const next = { ...prev };
+          pending.forEach(({ key }, idx) => {
+            next[key] = translated[idx];
+            translationsRef.current[key] = translated[idx];
+          });
+          return next;
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    translateMissing();
+    return () => {
+      cancelled = true;
+    };
+  }, [comments, viewer.generation, viewer.regionPref]);
 
   if (loading)
     return (
@@ -207,16 +252,19 @@ const Thread = () => {
         </h2>
 
         {comments.length > 0 ? (
-          comments.map((c, i) => (
-            <div
-              key={i}
-              className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4"
-            >
-              <p className="text-gray-800">{c.text}</p>
-              <TranslationBox tr={commentTr[i]} />
-              <p className="text-xs text-gray-500 mt-1">by {c.user}</p>
-            </div>
-          ))
+          comments.map((c, i) => {
+            const translationKey = getCommentKey(c, i);
+            return (
+              <div
+                key={translationKey}
+                className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-4"
+              >
+                <p className="text-gray-800">{c.text}</p>
+                <TranslationBox tr={commentTranslations[translationKey]} />
+                <p className="text-xs text-gray-500 mt-1">by {c.user}</p>
+              </div>
+            );
+          })
         ) : (
           <p className="text-gray-500">No comments yet. Be the first!</p>
         )}
@@ -228,15 +276,24 @@ const Thread = () => {
           </h3>
           <input
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              if (commentError) setCommentError(null);
+            }}
             placeholder="Write your comment..."
             className="w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#2983CC]"
           />
+          {commentError && (
+            <p className="text-sm text-red-500 mb-2">{commentError}</p>
+          )}
           <button
             onClick={submitComments}
-            className="bg-[#2983CC] text-white px-4 py-2 rounded-lg font-semibold hover:bg-black transition"
+            disabled={submitting}
+            className={`bg-[#2983CC] text-white px-4 py-2 rounded-lg font-semibold transition ${
+              submitting ? "opacity-50 cursor-not-allowed" : "hover:bg-black"
+            }`}
           >
-            Submit
+            {submitting ? "Submitting…" : "Submit"}
           </button>
         </div>
       </main>
